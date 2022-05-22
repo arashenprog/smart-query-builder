@@ -1,0 +1,32 @@
+{
+    "from": {
+        "users": {
+            "select": [
+                "*"
+            ],
+            "filter": {
+                "or": [
+                    {
+                        "field": "name",
+                        "operator": "eq",
+                        "value": "admin"
+                    },
+                    {
+                        "and": [
+                            {
+                                "field": "age",
+                                "operator": ">",
+                                "value": 12
+                            },
+                            {
+                                "field": "gender",
+                                "operator": "=",
+                                "value": "male"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}
