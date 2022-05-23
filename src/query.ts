@@ -1,3 +1,7 @@
+export type filter = { [key: string]: { [key: string]: any[] | filter | any } };
+export type whereExp = (name: string, value: any) => any;
+export type filterfun = { [key in "or" | "and"]: whereExp };
+
 export default class QueryExpr {
 
     private _statements: any = {
@@ -12,7 +16,7 @@ export default class QueryExpr {
 
     private get _root_from(): any {
         if (!this._root_query["$from"])
-            this._root_query["$from"] = {}
+            this._root_query["$from"] = { "$select": "*" }
         return this._root_query["$from"];
     }
 
@@ -35,7 +39,12 @@ export default class QueryExpr {
         return this;
     }
 
-    filter(value: { [cond in '$or' | '$and']?: { [name: string]: string[] } }): QueryExpr {
+    filter(value: filter): QueryExpr {
+        this._current_source['$filter'] = value
+        return this;
+    }
+
+    filter2(value: filterfun   ): QueryExpr {
         this._current_source['$filter'] = value
         return this;
     }
@@ -52,7 +61,7 @@ export default class QueryExpr {
 
 
     generate(): string {
-        return JSON.stringify(this._statements);
+        return JSON.stringify(this._statements, null, 4);
     }
 
 }
