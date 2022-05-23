@@ -1,32 +1,28 @@
 {
-    "from": {
-        "users": {
-            "select": [
-                "*"
-            ],
-            "filter": {
-                "or": [
-                    {
-                        "field": "name",
-                        "operator": "eq",
-                        "value": "admin"
-                    },
-                    {
-                        "and": [
-                            {
-                                "field": "age",
-                                "operator": ">",
-                                "value": 12
-                            },
-                            {
-                                "field": "gender",
-                                "operator": "=",
-                                "value": "male"
-                            }
-                        ]
+    "$query": {
+        "$from": {
+            "$select": "*",
+            "[users]": {
+                "$filter": {
+                    "$or": {
+                        "[name]": [
+                            "eq",
+                            "Ali"
+                        ],
+                        "$and": {
+                            "[age]": [
+                                ">",
+                                10
+                            ]
+                        }
                     }
-                ]
+                }
             }
-        }
+        },
+        "$orderby": {
+            "[name]": 1
+        },
+        "$skip": 0,
+        "$take": 10
     }
 }
