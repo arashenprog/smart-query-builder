@@ -19,11 +19,11 @@ export class FilterExpr implements IFilterExpr {
     }
 
     private get _root_filter(): any {
-        return this._statements[`$${this._cond}`];
+             return this._statements[`$${this._cond}`];
     }
 
     eq(feild: string, value: any): IFilterExpr {
-        this._root_filter[`[${feild}]`] = ['eq', value];
+         this._root_filter[`[${feild}]`] = ['eq', value]; 
         return this;
     }
     gtn(feild: string, value: any): IFilterExpr {

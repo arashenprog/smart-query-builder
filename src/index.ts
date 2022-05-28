@@ -1,7 +1,5 @@
 import { IFilterExpr, QueryExpr } from './query';
-
 const builder = new QueryExpr();
-
 const q = builder
     .from("users")
     .filter("or", (c: IFilterExpr) => {
@@ -14,4 +12,4 @@ const q = builder
     .skip(0)
     .take(10)
     .generate();
-console.log(q);
+console.debug(q);
