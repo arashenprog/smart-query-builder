@@ -4,19 +4,11 @@ const builder = new QueryExpr();
 
 const q = builder
     .from("users")
-    // .filter({
-    //     "$or": {
-    //         "[name]": ["eq", "Ali"],
-    //         "$and": {
-    //             "[age]": [">", 10]
-    //         }
-    //     },
-
-    // })
     .filter("or", (c: IFilterExpr) => {
         c.eq("name", "Ali");
         c.filter("and", (c) => {
             c.gtn("age", 10);
+            c.eq("address", "isf");
         });
     })
     .skip(0)
