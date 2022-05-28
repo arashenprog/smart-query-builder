@@ -1,8 +1,50 @@
-export type filter = { [key: string]: { [key: string]: any[] | filter | any } };
-export type whereExp = (name: string, value: any) => any;
-export type filterfun = { [key in "or" | "and"]: whereExp };
 
-export default class QueryExpr {
+export type WhereCondition = 'or' | 'and';
+
+
+export interface IFilterExpr {
+    eq(feild: string, value: any): IFilterExpr;
+    gtn(feild: string, value: any): IFilterExpr;
+    ltn(feild: string, value: any): IFilterExpr;
+    filter(op: WhereCondition, expr: (c: IFilterExpr) => void): IFilterExpr;
+}
+
+export class FilterExpr implements IFilterExpr {
+    private _statements: any = {};
+    private _cond: WhereCondition = 'and';
+
+    constructor(cond: WhereCondition, root: any) {
+        this._cond = cond;
+        root[`$${cond}`] = this._statements[`$${cond}`] = {};
+    }
+
+    private get _root_filter(): any {
+        return this._statements[`$${this._cond}`];
+    }
+
+    eq(feild: string, value: any): IFilterExpr {
+        this._root_filter[`[${feild}]`] = ['eq', value];
+        return this;
+    }
+    gtn(feild: string, value: any): IFilterExpr {
+        this._root_filter[`[${feild}]`] = ['>', value];
+        return this;
+    }
+    ltn(feild: string, value: any): IFilterExpr {
+        this._root_filter[`[${feild}]`] = ['<', value];
+        return this;
+    }
+    filter(cond: WhereCondition, expr: (c: IFilterExpr) => void): IFilterExpr {
+        const e = new FilterExpr(cond, this._root_filter);
+        expr(e);
+        return this;
+    }
+
+}
+
+
+
+export class QueryExpr {
 
     private _statements: any = {
         "$query": {}
@@ -30,7 +72,7 @@ export default class QueryExpr {
     }
 
     from(source: string): QueryExpr {
-        this._current_source = this._root_from[`${source}`] = {};
+        this._current_source = this._root_from[`[${source}]`] = {};
         return this;
     }
 
@@ -39,13 +81,11 @@ export default class QueryExpr {
         return this;
     }
 
-    filter(value: filter): QueryExpr {
-        this._current_source['$filter'] = value
-        return this;
-    }
 
-    filter2(value: filterfun   ): QueryExpr {
-        this._current_source['$filter'] = value
+    filter(cond: WhereCondition, expr: (c: IFilterExpr) => void): QueryExpr {
+        this._current_source['$filter'] = {};
+        const e = new FilterExpr(cond, this._current_source['$filter']);
+        expr(e);
         return this;
     }
 
