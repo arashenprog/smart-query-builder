@@ -5,7 +5,7 @@
       "extensions": "js,jsx",
       "quiet": true,
       "legacyWatch": true,
-      "delay": 500,
+      "delay": 1500,
       "runOnChangeOnly": false
     }
   },
