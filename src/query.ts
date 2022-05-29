@@ -1,86 +1,116 @@
 
-export type WhereCondition = 'or' | 'and';
+export type FilterCondition = 'or' | 'and' | 'not';
 
-export const KEY_WHERE = '$where';
+export const KEY_FILTER = '$filter';
 export const KEY_FROM = '$from';
 export const KEY_QUERY = '$query';
 
 
+export type FilterCallback = ((c: IFilterExpr) => void);
+export type FilterRootCallback = ((c: IFilterRootExpr) => void);
 
-export interface IWhereRootExpr {
-    or(expr: (c: IWhereExpr) => void): IWhereRootExpr;
-    and(expr: (c: IWhereExpr) => void): IWhereRootExpr;
+
+
+export interface IFilterRootExpr {
+    or(expr: FilterCallback): IFilterRootExpr;
+    and(expr: FilterCallback): IFilterRootExpr;
 }
 
-export interface IWhereExpr {
-    eq(field: string, value: any): IWhereExpr;
-    gt(field: string, value: any): IWhereExpr;
-    lt(field: string, value: any): IWhereExpr;
-    between(field: string, val1: any,val2: any): IWhereExpr;
-    or(expr: (c: IWhereExpr) => void): IWhereExpr;
-    and(expr: (c: IWhereExpr) => void): IWhereExpr;
+export interface IFilterExpr {
+    eq(field: string, value: any): IFilterExpr;
+    gt(field: string, value: any): IFilterExpr;
+    gte(field: string, value: any): IFilterExpr;
+    lt(field: string, value: any): IFilterExpr;
+    lte(field: string, value: any): IFilterExpr;
+    in(field: string, ...values: any[]): IFilterExpr;
+    between(field: string, val1: any, val2: any): IFilterExpr;
+    or(expr: FilterCallback): IFilterExpr;
+    and(expr: FilterCallback): IFilterExpr;
+    not(expr: FilterCallback): IFilterExpr;
 }
 
-export class WhereRootExpr implements IWhereRootExpr {
+export class FilterRootExpr implements IFilterRootExpr {
     private _statements: any = {};
     constructor(root: any) {
         this._statements = root;
     }
 
-    or(expr: (c: IWhereExpr) => void): IWhereRootExpr {
-        const e = new WhereExpr("or", this._statements);
+    or(expr: FilterCallback): IFilterRootExpr {
+        const e = new FilterExpr("or", this._statements);
         expr(e);
         return this;
     }
-    and(expr: (c: IWhereExpr) => void): IWhereRootExpr {
-        const e = new WhereExpr("and", this._statements);
+    and(expr: FilterCallback): IFilterRootExpr {
+        const e = new FilterExpr("and", this._statements);
         expr(e);
         return this;
     }
 }
 
-export class WhereExpr implements IWhereExpr {
+export class FilterExpr implements IFilterExpr {
     private _statements: any = {};
-    private _cond: WhereCondition = 'and';
+    private _cond: FilterCondition = 'and';
 
-    constructor(cond: WhereCondition, root: any) {
+    constructor(cond: FilterCondition, root: any) {
         this._cond = cond;
         root[`$${cond}`] = this._statements[`$${cond}`] = {};
     }
 
- 
+
 
     private get _root_filter(): any {
         return this._statements[`$${this._cond}`];
     }
 
 
-    eq(field: string, value: any): IWhereExpr {
+    eq(field: string, value: any): IFilterExpr {
         this._root_filter[`$eq([${field}])`] = value;
         return this;
     }
-    gt(field: string, value: any): IWhereExpr {
+    gt(field: string, value: any): IFilterExpr {
         this._root_filter[`$gt([${field}])`] = value;
         return this;
     }
-    
-    lt(field: string, value: any): IWhereExpr {
+
+    gte(field: string, value: any): IFilterExpr {
+        this._root_filter[`$gte([${field}])`] = value;
+        return this;
+    }
+
+    lt(field: string, value: any): IFilterExpr {
         this._root_filter[`$lt([${field}])`] = value;
         return this;
     }
 
-    between(field: string, val1: any, val2: any): IWhereExpr {
-        this._root_filter[`$between([${field}])`] = [val1,val2];
+    lte(field: string, value: any): IFilterExpr {
+        this._root_filter[`$lte([${field}])`] = value;
         return this;
     }
 
-    or(expr: (c: IWhereExpr) => void): IWhereExpr {
-        const e = new WhereExpr("or", this._root_filter);
+
+    in(field: string, ...values: any[]): IFilterExpr {
+        this._root_filter[`$in([${field}])`] = [...values];
+        return this;
+    }
+
+    between(field: string, val1: any, val2: any): IFilterExpr {
+        this._root_filter[`$between([${field}])`] = [val1, val2];
+        return this;
+    }
+
+    or(expr: FilterCallback): IFilterExpr {
+        const e = new FilterExpr("or", this._root_filter);
         expr(e);
         return this;
     }
-    and(expr: (c: IWhereExpr) => void): IWhereExpr {
-        const e = new WhereExpr("and", this._root_filter);
+    and(expr: FilterCallback): IFilterExpr {
+        const e = new FilterExpr("and", this._root_filter);
+        expr(e);
+        return this;
+    }
+
+    not(expr: FilterCallback): IFilterExpr {
+        const e = new FilterExpr("not", this._root_filter);
         expr(e);
         return this;
     }
@@ -123,19 +153,22 @@ export class QueryExpr {
     }
 
 
-    where(expr: (c: IWhereRootExpr) => void): QueryExpr {
-        this._current_source[KEY_WHERE] = {};
-        const e = new WhereRootExpr(this._current_source[KEY_WHERE]);
-        expr(e);
+    filter(expr: FilterCallback): QueryExpr;
+    filter(expr: FilterRootCallback): QueryExpr;
+    filter(expr: any): QueryExpr {
+        const source = this._current_source[KEY_FILTER] = {};
+        let e = null;
+        // detect root filter type
+        try {
+            e = new FilterRootExpr(source);
+            expr(e);
+        }
+        catch
+        {
+            e = new FilterExpr("and", source);
+            expr(e);
+        }
         return this;
-    }
-
-    andWhere(expr: (c: IWhereExpr) => void): QueryExpr {
-        return this.where(c => c.and(expr));
-    }
-
-    orWhere(expr: (c: IWhereExpr) => void): QueryExpr {
-        return this.where(c => c.or(expr));
     }
 
     skip(value: number = 0) {
@@ -148,6 +181,8 @@ export class QueryExpr {
         return this;
     }
 
+
+    order
 
     generate(): string {
         return JSON.stringify(this._statements, null, 4);
