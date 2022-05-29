@@ -1,0 +1,54 @@
+{
+    "$select": [
+        "[name]",
+        "[fname]"
+    ],
+    "$from": 
+        {
+            "table":"users",
+            "alias":"u"
+        } 
+     ,
+    "$innerJoin":{
+        "table":"roles",
+            "alias":"r",
+            "localField":"id",
+            "foreignField":"u.userRoleId"
+    },
+    "$filter": [
+        {
+            "$or": [
+                {
+                    "$eq": {
+                        "field": "name",
+                        "value": "Arash"
+                    }
+                },
+                {
+                    "$in": {
+                        "field": "name",
+                        "values": [
+                            "Ali",
+                            "Reza"
+                        ]
+                    }
+                },
+                {
+                    "$and": [
+                        {
+                            "$between": {
+                                "field": "age",
+                                "values": [
+                                    10,
+                                    20
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "$skip": 0,
+    "$take": 10
+}
