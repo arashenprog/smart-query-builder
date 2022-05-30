@@ -1,3 +1,4 @@
+import { DatabaseProvider, DatabaseProviders, ProviderName } from "./providers/provider";
 
 export type FilterCondition = 'or' | 'and' | 'not';
 
@@ -53,7 +54,7 @@ export class FilterExpr implements IFilterExpr {
 
     constructor(cond: FilterCondition, root: any) {
         this._cond = cond;
-        root[`$${cond}`] = this._statements[`$${cond}`] = {};
+        root[`$${cond}`] = this._statements[`$${cond}`] = [];
     }
 
 
@@ -64,11 +65,22 @@ export class FilterExpr implements IFilterExpr {
 
 
     eq(field: string, value: any): IFilterExpr {
-        this._root_filter[`$eq([${field}])`] = value;
+        this._root_filter.push({
+            "$eq": {
+                '$f': `[${field}]`,
+                '$v': value
+            }
+        })
+        //this._root_filter[`$eq([${field}])`] = value;
         return this;
     }
     gt(field: string, value: any): IFilterExpr {
-        this._root_filter[`$gt([${field}])`] = value;
+        //this._root_filter[`$gt([${field}])`] = value;
+        this._root_filter.push({
+            f: field,
+            o: 'gt',
+            v: value
+        })
         return this;
     }
 
@@ -89,29 +101,55 @@ export class FilterExpr implements IFilterExpr {
 
 
     in(field: string, ...values: any[]): IFilterExpr {
-        this._root_filter[`$in([${field}])`] = [...values];
+        //this._root_filter[`$in([${field}])`] = [...values];
+        this._root_filter.push({
+            "$in": {
+                '$f': `[${field}]`,
+                '$v': [...values]
+            }
+        })
         return this;
     }
 
     between(field: string, val1: any, val2: any): IFilterExpr {
-        this._root_filter[`$between([${field}])`] = [val1, val2];
+        this._root_filter.push({
+            "$between": {
+                '$f': `[${field}]`,
+                '$v': [val1, val2]
+            }
+        })
+        //this._root_filter[`$between([${field}])`] = [val1, val2];
         return this;
     }
 
     or(expr: FilterCallback): IFilterExpr {
-        const e = new FilterExpr("or", this._root_filter);
+        const and = {}
+        const e = new FilterExpr("or", and);
         expr(e);
+        if (e._root_filter.length < 2)
+            throw Error("OR need more than 1 operand")
+        this._root_filter.push(and)
         return this;
     }
     and(expr: FilterCallback): IFilterExpr {
-        const e = new FilterExpr("and", this._root_filter);
+        const and = {}
+        const e = new FilterExpr("and", and);
         expr(e);
+        if (e._root_filter.length < 2)
+            throw Error("AND need more than 1 operand")
+        this._root_filter.push(and)
         return this;
     }
 
     not(expr: FilterCallback): IFilterExpr {
-        const e = new FilterExpr("not", this._root_filter);
+        // const e = new FilterExpr("not", this._root_filter);
+        // expr(e);
+        const not = {}
+        const e = new FilterExpr("not", not);
         expr(e);
+        if (e._root_filter.length != 1)
+            throw Error("NOT need just 1 operand")
+        this._root_filter.push(not)
         return this;
     }
 }
@@ -181,11 +219,11 @@ export class QueryExpr {
         return this;
     }
 
-
-    order
-
-    generate(): string {
-        return JSON.stringify(this._statements, null, 4);
+    generate(name: ProviderName='JSON'): string {
+        const provider = DatabaseProviders[name] as DatabaseProvider;
+        if (provider == null)
+            throw Error('Invalid provider name')
+        return provider.generate(this._statements);
     }
 
 }
