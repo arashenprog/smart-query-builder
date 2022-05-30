@@ -12,16 +12,16 @@ const q = builder
     .from("users")
     .select('name', 'fname')
     .filter(c => {
-        c.or(c => {
+        //c.or(c => {
             c.eq("name", "Arash");
-            c.in("name", "Ali", "Reza");
-            c.not(c =>
-                c.and(c => {
-                    c.between("age", 10, 20);
-                    c.not(c => { c.between("weight", 50, 60) });
-                })
-            )
-        });
+            // c.in("name", "Ali", "Reza");
+            // c.not(c =>
+            //     c.and(c => {
+            //         c.between("age", 10, 20);
+            //         c.not(c => { c.between("weight", 50, 60) });
+            //     })
+            // )
+        //});
         //c.eq("name","asghar");
 
         //c.not(c => c.in("name", "Ali", "Reza"));

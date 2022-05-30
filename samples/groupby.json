@@ -1,0 +1,38 @@
+{
+    "$query": {
+        "$from": {
+            "$select": {
+                "g": "gender",
+                "count": {
+                    "$count": "[name]"
+                },
+                "age_avg": {
+                    "$avg": "[age]"
+                }
+            },
+            "$source": "Users",
+            "$filter": {
+                "$and": [
+                    {
+                        "[name]": {
+                            "$eq": "Arash"
+                        }
+                    }
+                ]
+            },
+            "$groupby": {
+                "columns": [
+                    "gender",
+                    "birthLocation"
+                ],
+                "$filter": {
+                    "[count]": {
+                        "$gt": 12
+                    }
+                }
+            },
+            "$skip": 0,
+            "$take": 10
+        }
+    }
+}

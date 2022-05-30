@@ -1,0 +1,28 @@
+{
+    "$query": {
+        "$from": {
+            "$select": [
+                "[name]",
+                "[fname]"
+            ],
+            "$source": "Users",
+            "$filter": {
+                "$and": [
+                    {
+                        "[name]": {
+                            "$eq": "Arash"
+                        },
+                        "[age]": {
+                            "$between": [
+                                10,
+                                20
+                            ]
+                        }
+                    }
+                ]
+            },
+            "$skip": 0,
+            "$take": 10
+        }
+    }
+}

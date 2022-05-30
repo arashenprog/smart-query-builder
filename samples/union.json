@@ -1,0 +1,64 @@
+{
+    "$query": {
+        "$from": {
+            "$select": {
+                "name": "[Users].[name]",
+                "family": "[Users].[fname]",
+                "role": "[Roles].[title]",
+                "picture": "[Photos].[url]"
+            },
+            "$source": {
+                "$union": [
+                    {
+                        "$from": {
+                            "$select": [
+                                "[name]",
+                                "[fname]"
+                            ],
+                            "$source": "Users1",
+                            "$skip": 0,
+                            "$take": 10
+                        }
+                    },
+                    {
+                        "$from": {
+                            "$select": [
+                                "[name]",
+                                "[fname]"
+                            ],
+                            "$source": "Users2",
+                            "$filter": {
+                                "$and": [
+                                    {
+                                        "[name]": {
+                                            "$eq": "Arash"
+                                        }
+                                    }
+                                ]
+                            },
+                            "$skip": 0,
+                            "$take": 10
+                        }
+                    }
+                ]
+            },
+            "$filter": {
+                "$and": [
+                    {
+                        "[name]": {
+                            "$eq": "Arash"
+                        },
+                        "[age]": {
+                            "$between": [
+                                10,
+                                20
+                            ]
+                        }
+                    }
+                ]
+            },
+            "$skip": 0,
+            "$take": 10
+        }
+    }
+}

@@ -1,63 +1,26 @@
 {
     "$query": {
         "$from": {
-            "$select": [
-                "[name]",
-                "[fname]"
-            ],
-            "[users]": {
-                "$filter": {
-                    "$or": [
-                        {
-                            "$eq": {
-                                "$f": "[name]",
-                                "$v": "Arash"
-                            }
-                        },
-                        {
-                            "$in": {
-                                "$f": "[name]",
-                                "$v": [
-                                    "Ali",
-                                    "Reza"
-                                ]
-                            }
-                        },
-                        {
-                            "$not": [
-                                {
-                                    "$and": [
-                                        {
-                                            "$between": {
-                                                "$f": "[age]",
-                                                "$v": [
-                                                    10,
-                                                    20
-                                                ]
-                                            }
-                                        },
-                                        {
-                                            "$not": [
-                                                {
-                                                    "$between": {
-                                                        "$f": "[weight]",
-                                                        "$v": [
-                                                            50,
-                                                            60
-                                                        ]
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    ]
-                                }
-                            ]
+            "$select": {
+                "name": "[Name]",
+                "fname": "[FName]"
+            },
+            "$source": "Users",
+            "$filter": {
+                "$and": [
+                    {
+                        "[name]": {
+                            "$eq": "Arash"
                         }
-                    ]
-                }
-            }
-        },
-        "$skip": 0,
-        "$take": 10
+                    }
+                ]
+            },
+            "$sort": {
+                "name": "asc",
+                "fname": "desc"
+            },
+            "$skip": 0,
+            "$take": 10
+        }
     }
 }

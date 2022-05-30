@@ -1,0 +1,66 @@
+{
+    "$query": {
+        "$from": {
+            "$select": {
+                "name": "[Users].[name]",
+                "family": "[Users].[fname]",
+                "fullname": {
+                    "ifNull": [
+                        {
+                            "$concat": [
+                                "[Users].[name]",
+                                " ",
+                                "[Users].[fname]"
+                            ]
+                        },
+                        "[Users].[name]",
+                        "Unknown"
+                    ]
+                },
+                "role": "[Roles].[title]",
+                "picture": "[Photos].[url]"
+            },
+            "$source": {
+                "$join": [
+                    {
+                        "$left": "[Users]",
+                        "$right": "[Roles]",
+                        "$type": "INNER",
+                        "$filter": {
+                            "[users].[roleId]": {
+                                "$eq": "[Roles].[id]"
+                            }
+                        }
+                    },
+                    {
+                        "$left": "[Users]",
+                        "$right": "[Photos]",
+                        "$type": "INNER",
+                        "$filter": {
+                            "[users].[photoId]": {
+                                "$eq": "[Photos].[id]"
+                            }
+                        }
+                    }
+                ]
+            },
+            "$filter": {
+                "$and": [
+                    {
+                        "[name]": {
+                            "$eq": "Arash"
+                        },
+                        "[age]": {
+                            "$between": [
+                                10,
+                                20
+                            ]
+                        }
+                    }
+                ]
+            },
+            "$skip": 0,
+            "$take": 10
+        }
+    }
+}
