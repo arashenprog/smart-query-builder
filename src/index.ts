@@ -28,7 +28,7 @@ const q = builder
     })
     .skip(0)
     .take(10)
-    .generate('JSON');
+    .generate('Mongo');
 console.debug(q);
 
 

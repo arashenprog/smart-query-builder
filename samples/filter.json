@@ -1,28 +1,49 @@
 {
-    "$query": {
-        "$from": {
-            "$select": [
-                "[name]",
-                "[fname]"
-            ],
-            "$source": "Users",
-            "$filter": {
-                "$and": [
-                    {
-                        "[name]": {
-                            "$eq": "Arash"
-                        },
-                        "[age]": {
-                            "$between": [
-                                10,
-                                20
-                            ]
-                        }
-                    }
-                ]
-            },
-            "$skip": 0,
-            "$take": 10
-        }
+  "$query": {
+    "$from": {
+      "$select": ["[name]", "[fname]"],
+      "$source": "Users",
+      "$filter": {
+        "$and": [
+          {
+            "[name]": {
+              "$eq": "Arash"
+            }
+          },
+          {
+            "$or": [
+              {
+                "[age]": {
+                  "$between": [10, 20]
+                }
+              },
+              {
+                "[age]": {
+                  "$between": [60, 70]
+                }
+              }
+            ]
+          },
+          {
+            "$not": {
+              "$or": [
+                {
+                  "[age]": {
+                    "$between": [10, 20]
+                  }
+                },
+                {
+                  "[age]": {
+                    "$between": [60, 70]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "$skip": 0,
+      "$take": 10
     }
+  }
 }
